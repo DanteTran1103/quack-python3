@@ -1,10 +1,10 @@
-## Quack - Reuse modules. [![Build Status](https://api.travis-ci.org/Autodesk/quack.svg)](https://travis-ci.org/Autodesk/quack)
+## Quack - Reuse modules
 
 #### Problem
 Currently, We dont have anything which helps us in reusing open source (especialy in git repositories) code. We see code - like it - clone it - copy file / folder and put it in our project and same code gets push in our repository, why? Why code redundancies?
 
 #### Solution
-Should be straight forward copy paste and put third party libraries in .gitignore - simple! And there shouldnt be any complexity needed to update libraries with latest changes.
+Should be straightforward copy paste and put third party libraries in .gitignore - simple! And there shouldn't be any complexity needed to update libraries with the latest changes.
 
 #### Quack Way
 * Add third party repository to quack configuration yaml.
@@ -18,15 +18,10 @@ Should be straight forward copy paste and put third party libraries in .gitignor
 * Works on UNIX (Mac OS X, Linux)
 
 ### Installation
-There are two ways to install quack. Both should have roughly the same outcome, but have their advantages/disadvantages.
+##### 1) Install python3
+Quack requires Python to run, follow [this guide](https://programwithus.com/learn/python/install-python3-mac) to install python3.
 
-##### 1) PyPI / pip
-This method will always produce some stable build, but may not be the most up to date version. New functionality will come slower than building from this repo.
-```shell
-$ pip install quack
-```
-
-Note, depending on your computer's settings, you may need to `sudo pip install quack`.
+Note, if you already installed python3, you can skip this step.
 
 ##### 2) Build from this repo
 This method will always include the latest features, but sometimes will not work at all. Oops!
@@ -35,9 +30,9 @@ Clone the repo, then use setup.py to install the package. Note, this process wil
 ```fish
 $ git clone https://github.com/zonito/quack.git
 $ cd quack
-$ python setup.py install
+$ python3 setup.py install
 ```
-Note, depending on your computer's settings, you may need to `sudo python setup.py install`.
+Note, depending on your computer's settings, you may need to `sudo python3 setup.py install`.
 
 ### Examples:
 
@@ -104,21 +99,3 @@ You can provide your custom `yaml` file (such as `build.yaml`). Above command wi
 * `-h`, `--help`: version splash page // usage
 * `-p`: `--profile`: Run specific profile. `default: init`
 * `-y`: `--yaml`: Provide custom yaml. `default: quack.yaml`
-
-
-### Contributing
-We <3 issue submissions, and address your problem as quickly as possible!
-
-If you want to write code:
-
-* Fork the repository
-* Create your feature branch (`git checkout -b my-new-feature`)
-* Commit your changes (`git commit -am 'add some feature'`)
-* Push to your branch (`git push origin my-new-feature`)
-* Create a new Pull Request
-
-## Join Chats
-
-* [Telegram chat](https://telegram.me/joinchat/00a5dbf000f4a67acd6b351152c86771)
-
-![Analytics](https://ga-beacon.appspot.com/UA-68498210-2/quack/repo)
