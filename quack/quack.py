@@ -45,7 +45,7 @@ def _get_config():
     yaml_file = (hasattr(_ARGS, 'yaml') and _ARGS.yaml) or 'quack.yaml'
     if os.path.isfile(yaml_file):
         with open(yaml_file) as file_pointer:
-            return yaml.load(file_pointer)
+            return yaml.load(file_pointer, Loader=yaml.Loader)
     return
 
 
