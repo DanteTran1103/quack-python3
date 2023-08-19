@@ -28,7 +28,7 @@ This method will always include the latest features, but sometimes will not work
 
 Clone the repo, then use setup.py to install the package. Note, this process will differ only slightly in a non-bash shell.
 ```fish
-$ git clone https://github.com/zonito/quack.git
+$ git clone https://github.com/DanteTran1103/quack-python3.git
 $ cd quack
 $ python3 setup.py install
 ```
