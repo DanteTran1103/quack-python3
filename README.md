@@ -23,7 +23,14 @@ Quack requires Python to run, follow [this guide](https://programwithus.com/lear
 
 Note, if you already installed python3, you can skip this step.
 
-##### 2) Build from this repo
+##### 2) Install dependencies
+```fish
+$ pip3 install PyYaml
+$ pip3 install argparse
+$ pip3 install gitpython
+```
+
+##### 3) Build from this repo
 This method will always include the latest features, but sometimes will not work at all. Oops!
 
 Clone the repo, then use setup.py to install the package. Note, this process will differ only slightly in a non-bash shell.
