@@ -1,0 +1,12 @@
+name: Your app name
+version: v0.1
+gitignore: false
+
+modules:
+  # Declared Git modules used within your project.
+
+profiles:
+  init:
+    tasks: [ 'modules' ]
+  clean:
+    tasks: [ '-modules' ]
