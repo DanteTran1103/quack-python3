@@ -4,13 +4,13 @@
 """Quack!!"""
 
 import argparse
-import git
 import os
 import shutil
 import subprocess
-import sys
-import yaml
 
+import git
+import yaml
+from git import Repo
 
 _ARGS = None
 
@@ -57,69 +57,88 @@ def _fetch_modules(config, specific_module=None):
         return
     modules = '.quack/modules'
     ignore_list = []
+    _remove_dir(os.path.join(modules, ''))
     _remove_dir('.git/modules/')
     _create_dir(modules)
     if config.get('gitignore') and os.path.isfile('.gitignore'):
         with open('.gitignore', 'r') as file_pointer:
             ignore_list = list(set(file_pointer.read().split('\n')))
-    repo = git.Repo('.')
+
     for module in module_list.items():
-        if specific_module and specific_module != module[0]:
+        module_path = module[0]
+        if specific_module and specific_module != module_path:
             continue
+        repo_url = module[1].get('repository')
+        if not repo_url:
+            print(f'{module_path}: Please config a repository url')
+            continue
+        chosen_branch = module[1].get('branch')
         tag = module[1].get('tag')
         hexsha = module[1].get('hexsha')
-        if tag and hexsha:
-            print('%s: Cannot be both tag & hexsha.' % module[0])
-            continue
-        print('Cloning: ' + module[1]['repository'])
-        sub_module = repo.create_submodule(
-            module[0], modules + '/' + module[0],
-            url=module[1]['repository'],
-            branch=module[1].get('branch', 'master')
-        )
+        has_hexsha_config = hexsha is not None
+        has_tag_config = tag is not None
 
-        if tag:
-            subprocess.call(
-                ['git', 'checkout', '--quiet', 'tags/' + tag],
-                cwd=modules + '/' + module[0])
-            tag = ' (' + tag + ') '
-        elif hexsha:
-            subprocess.call(
-                ['git', 'checkout', '--quiet', hexsha],
-                cwd=modules + '/' + module[0])
-            hexsha = ' (' + hexsha + ')'
-        else:
-            hexsha = ' (' + sub_module.hexsha + ')'
+        if not chosen_branch and not has_hexsha_config and not has_tag_config:
+            print(f'{module_path}: must have at least branch or tag or hexsha')
+            continue
+
+        if tag and hexsha:
+            print(f'{module_path}: Cannot be both tag & hexsha.')
+            continue
+
+        print('Cloning: ' + repo_url)
+        temp_cloned_path = os.path.join(modules, module_path)
+        if chosen_branch:
+            repo = Repo.clone_from(
+                url=repo_url,
+                to_path=temp_cloned_path,
+                single_branch=True,
+                branch=chosen_branch)
+        else:  # if not specific the branch, clone with the default branch
+            repo = Repo.clone_from(
+                url=repo_url,
+                to_path=temp_cloned_path,
+                single_branch=True)
 
         path = module[1].get('path', '')
-        from_path = '%s/%s/%s' % (modules, module[0], path)
+        from_path = os.path.join(modules, module_path, path)
+        if tag:
+            subprocess.call(['git', 'checkout', '--quiet', 'tags/' + tag], cwd=from_path)
+            tag = ' (' + tag + ') '
+        elif hexsha:
+            subprocess.call(['git', 'checkout', '--quiet', hexsha], cwd=from_path)
+            hexsha = ' (' + hexsha + ')'
+        else:
+            hexsha = ' (' + repo.head.commit.hexsha + ')'
+
         is_exists = os.path.exists(from_path)
         if (path and is_exists) or not path:
             if module[1].get('isfile'):
-                if os.path.isfile(module[0]):
-                    os.remove(module[0])
-                shutil.copyfile(from_path, module[0])
+                if os.path.isfile(module_path):
+                    os.remove(module_path)
+                shutil.copyfile(from_path, module_path)
             else:
-                _remove_dir(module[0])
-                shutil.copytree(
-                    from_path, module[0],
-                    ignore=shutil.ignore_patterns('.git*'))
+                _remove_dir(module_path)
+                if has_hexsha_config or has_tag_config:
+                    shutil.copytree(from_path, module_path, ignore=shutil.ignore_patterns('.git*'))
+                else:
+                    shutil.copytree(from_path, module_path)
         elif not is_exists:
-            print('%s folder does not exists. Skipped.' % path)
+            print(f'{path} folder does not exists. Skipped.')
 
-        # Remove submodule.
-        sub_module.remove()
+        # Remove temporary cloned repo.
+        _remove_dir(from_path)
         if os.path.isfile('.gitmodules'):
             subprocess.call('rm .gitmodules'.split())
             subprocess.call('git rm --quiet --cached .gitmodules'.split())
 
-        print('Cloned: ' + module[0] + (tag or hexsha))
+        print('Cloned: ' + module_path + (tag or hexsha))
 
         if config.get('gitignore'):
             with open('.gitignore', 'a') as file_pointer:
-                if module[0] not in ignore_list:
-                    file_pointer.write('\n' + module[0])
-                    ignore_list.append(module[0])
+                if module_path not in ignore_list:
+                    file_pointer.write('\n' + module_path)
+                    ignore_list.append(module_path)
 
 
 def _clean_modules(config, specific_module=None):
@@ -194,20 +213,17 @@ def _run_tasks(config, profile):
 
 def _prompt_to_create():
     """Prompt user to create quack configuration."""
-    pyversion = sys.version_info.major
     prompt = input
-    if pyversion < 3:
-        prompt = raw_input
     yes_or_no = prompt(
         'No quack configuration found, do you want to create one? (y/N): ')
     if yes_or_no.lower() == 'y':
         project_name = prompt('Provide project name: ')
         with open('quack.yaml', 'a') as file_pointer:
-            file_pointer.write("""name: %s
+            file_pointer.write(f"""name: {project_name}
 modules:
 profiles:
   init:
-    tasks: ['modules']""" % project_name)
+    tasks: ['modules']""")
         return _get_config()
     return
 
@@ -230,6 +246,7 @@ def main():
     stats = _run_tasks(config, profile)
     print('%s task(s) completed with %s dependencies.' % (
         stats['tasks'], stats['dependencies']))
+
 
 if __name__ == '__main__':
     _ARGS = _setup()
